@@ -198,7 +198,7 @@ maturity_ogive <- function(specie) {
 }
 
 
-POPE <- function(
+model <- function(
     N0,
     catch,
     a,
@@ -249,7 +249,7 @@ POPE <- function(
     # Mortalidad natural durante la primera mitad del intervalo.
     survivors_half_step <- N[t, ] * exp(-M / 2)
     
-    # Aproximación de Pope: extracción de la captura en el punto medio.
+    # Aproximación de model: extracción de la captura en el punto medio.
     remaining_abundance <- survivors_half_step - catch
     
     if (any(remaining_abundance < 0, na.rm = TRUE)) {
@@ -377,7 +377,7 @@ estimar_F <- function(N, C, M,
 # Mortalidad por pesca por talla y semana
 #---------------------------------------------------------
 
-estimar_F_matriz <- function(PopeN,
+estimar_F_matriz <- function(modelN,
                              CatchData,
                              M_l,
                              unitSurvey = 1e6,
@@ -385,7 +385,7 @@ estimar_F_matriz <- function(PopeN,
                              dt = 1){
   
   # Ambas matrices quedan en las mismas unidades
-  N <- PopeN[, -1] * unitSurvey / unitCatch
+  N <- modelN[, -1] * unitSurvey / unitCatch
   C <- CatchData
   
   F <- matrix(
@@ -419,14 +419,14 @@ estimar_F_matriz <- function(PopeN,
 # Indicadores de mortalidad por pesca
 #----------------------------------------------------------
 
-indicadores_F <- function(F_pope,
-                          PopeN,
+indicadores_F <- function(F_model,
+                          modelN,
                           talla_adulto = 12){
   
-  tallas <- as.numeric(rownames(F_pope))
+  tallas <- as.numeric(rownames(F_model))
   
   # Abundancia (elimina la columna del crucero)
-  N <- PopeN[, -1]
+  N <- modelN[, -1]
   
   adultos   <- tallas >= talla_adulto
   juveniles <- tallas < talla_adulto
@@ -436,7 +436,7 @@ indicadores_F <- function(F_pope,
   #-------------------------
   
   F_adultos <- colSums(
-    F_pope[adultos, ] * N[adultos, ],
+    F_model[adultos, ] * N[adultos, ],
     na.rm = TRUE
   ) /
     colSums(
@@ -449,7 +449,7 @@ indicadores_F <- function(F_pope,
   #-------------------------
   
   F_juveniles <- colSums(
-    F_pope[juveniles, ] * N[juveniles, ],
+    F_model[juveniles, ] * N[juveniles, ],
     na.rm = TRUE
   ) /
     colSums(
@@ -462,7 +462,7 @@ indicadores_F <- function(F_pope,
   #-------------------------
   
   F_stock <- colSums(
-    F_pope * N,
+    F_model * N,
     na.rm = TRUE
   ) /
     colSums(
@@ -475,7 +475,7 @@ indicadores_F <- function(F_pope,
   #-------------------------
   
   F_max <- apply(
-    F_pope,
+    F_model,
     2,
     max,
     na.rm = TRUE
@@ -486,7 +486,7 @@ indicadores_F <- function(F_pope,
   #-------------------------
   
   F_inst <- apply(
-    F_pope,
+    F_model,
     2,
     sum,
     na.rm = TRUE
@@ -497,7 +497,7 @@ indicadores_F <- function(F_pope,
   #-------------------------
   
   selectividad <- rowMeans(
-    F_pope,
+    F_model,
     na.rm = TRUE
   )
   
@@ -511,7 +511,7 @@ indicadores_F <- function(F_pope,
   #-------------------------
   
   F_acumulado <- rowSums(
-    F_pope,
+    F_model,
     na.rm = TRUE
   )
   

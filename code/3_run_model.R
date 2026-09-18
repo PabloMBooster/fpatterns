@@ -1,8 +1,8 @@
 # =====================================================================
-# LENGTH-STRUCTURED POPE MODEL
+# LENGTH-STRUCTURED MODEL
 # North-Central anchoveta stock (Engraulis ringens)
 # =====================================================================
-source("code/1_pope_functions.R")
+source("code/1_model_functions.R")
 source("code/2_internal_function.R")
 # ---------------------------------------------------------------------
 # 1. Inputs
@@ -85,12 +85,12 @@ SurveyData[seq_len(n_length_survey), ] <- survey[
 ]
 
 # ---------------------------------------------------------------------
-# 3. Pope projection
+# 3.  projection
 # ---------------------------------------------------------------------
 
 week_labels <- colnames(CatchData)
 
-bootPope <- PopeBalance_week(
+output <- lengthBasedModel(
   survey_data = SurveyData,
   data_type = data_type,
   catch_data = CatchData,
@@ -114,8 +114,8 @@ M_l <- M_talla(
   escenarios = escenarios
 )
 
-F_pope <- estimar_F_matriz(
-  PopeN = bootPope$PopeN,
+F_model <- estimar_F_matriz(
+  modelN = output$modelN,
   CatchData = CatchData,
   M_l = M_l,
   unitSurvey = survey_unit,
@@ -123,27 +123,27 @@ F_pope <- estimar_F_matriz(
 )
 
 indicadores <- indicadores_F(
-  F_pope = F_pope,
-  PopeN = bootPope$PopeN,
+  F_model = F_model,
+  modelN = output$modelN,
   talla_adulto = 12
 )
 
 # Tasa de explotación semanal basada en la biomasa total
 indicadores$u <- catch_weekly$desembarque_t[-1] /
-  bootPope$Biomass[-1]
+  output$Biomass[-1]
 
 # ---------------------------------------------------------------------
 # 5. outputs
 # ---------------------------------------------------------------------
 
-results_pope <- list(
+results_model <- list(
   CatchData = CatchData,
   SurveyData = SurveyData,
-  Pope = bootPope,
+  model = output,
   M_at_length = M_l,
-  F_at_length = F_pope,
+  F_at_length = F_model,
   indicators = indicadores
 )
 
-results_pope$Pope$Biomass
-results_pope$indicators$F_stock
+results_model$model$Biomass
+results_model$indicators$F_stock

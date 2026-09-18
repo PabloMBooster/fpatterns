@@ -1,16 +1,16 @@
 # -------------------------------------------------------------------
-# R/pope_projection.R
+# R/model_projection.R
 #
-# Size-structured population projection using the Pope's method.
+# Size-structured population projection using the model's method.
 # The implementation includes growth, natural mortality, maturity,
 # biomass calculation, and bootstrap summaries.
 # -------------------------------------------------------------------
 
 # ===================================================================
-# 1. Pope projection
+# 1. model projection
 # ===================================================================
 
-projectPOPE <- function(
+projectmodel <- function(
     N,
     catch,
     a,
@@ -100,7 +100,7 @@ projectPOPE <- function(
   
   for (i in seq_len(ncol(N))) {
     
-    simulation <- POPE(
+    simulation <- model(
       
       N0 = N[, i],
       
@@ -176,10 +176,10 @@ projectPOPE <- function(
 }
 
 # ===================================================================
-# 2. Pope's method
+# 2. model's method
 # ===================================================================
 
-POPE <- function(
+model <- function(
     N0,
     catch,
     a,
@@ -230,7 +230,7 @@ POPE <- function(
     # Mortalidad natural durante la primera mitad del intervalo.
     survivors_half_step <- N[t, ] * exp(-M / 2)
     
-    # Aproximación de Pope: extracción de la captura en el punto medio.
+    # Aproximación de model: extracción de la captura en el punto medio.
     remaining_abundance <- survivors_half_step - catch
     
     if (any(remaining_abundance < 0, na.rm = TRUE)) {
@@ -277,10 +277,10 @@ POPE <- function(
 
 
 # ===================================================================
-# 3. Weekly Pope population projection
+# 3. Weekly model population projection
 # ===================================================================
 
-PopeBalance_week <- function(
+lengthBasedModel <- function(
     survey_data,
     data_type,
     catch_data,
@@ -312,7 +312,7 @@ PopeBalance_week <- function(
   #   week_labels <- colnames(catch_data)
   # }
   
-  pope_array <- array(
+  model_array <- array(
     data = NA_real_,
     dim = c(n_lengths, n_times, n_boot),
     dimnames = list(
@@ -339,7 +339,7 @@ PopeBalance_week <- function(
     
     for (week_id in seq_len(ncol(catch_data))) {
       
-      pope_projection <- projectPOPE(
+      model_projection <- projectmodel(
         
         N = abundance_current[, week_id, drop = FALSE],
         
@@ -360,7 +360,7 @@ PopeBalance_week <- function(
         Ts = 1
       )
       
-      abundance_next <- pope_projection$N[2, ]
+      abundance_next <- model_projection$N[2, ]
       
       abundance_current <- cbind(
         abundance_current,
@@ -370,7 +370,7 @@ PopeBalance_week <- function(
     
     colnames(abundance_current) <- c(survey_label, week_labels)
     
-    pope_array[, , bootstrap_id] <- abundance_current / survey_unit
+    model_array[, , bootstrap_id] <- abundance_current / survey_unit
     
     progress$tick()
   }
@@ -380,13 +380,13 @@ PopeBalance_week <- function(
   # ---------------------------------------------------------------
   
   # Dimensions: length x bootstrap replicate x time step
-  pope_array_N <- aperm(
-    pope_array,
+  model_array_N <- aperm(
+    model_array,
     perm = c(1, 3, 2)
   )
   
-  pope_median_N <- apply(
-    pope_array_N,
+  model_median_N <- apply(
+    model_array_N,
     MARGIN = c(1, 3),
     FUN = median,
     na.rm = TRUE
@@ -396,26 +396,26 @@ PopeBalance_week <- function(
   # Biomass summaries
   # ---------------------------------------------------------------
   
-  #species_info <- specie#popeProjection:::getSpeciesInfo(species)
+  #species_info <- specie#modelProjection:::getSpeciesInfo(species)
   
   length_marks <- createMarks(specie)
   
   weight_at_length <- pars_wl$a * (length_marks ^ pars_wl$b)
   
-  pope_array_B <- apply(
-    pope_array_N,
+  model_array_B <- apply(
+    model_array_N,
     MARGIN = c(2, 3),
     FUN = function(x) x * weight_at_length
   )
   
-  pope_median_B <- apply(
-    pope_median_N,
+  model_median_B <- apply(
+    model_median_N,
     MARGIN = 2,
     FUN = function(x) x * weight_at_length
   )
   
   total_biomass <- colSums(
-    pope_median_B,
+    model_median_B,
     na.rm = TRUE
   )
   
@@ -426,18 +426,18 @@ PopeBalance_week <- function(
   if (data_type == "boot") {
     
     output <- list(
-      PopeArrayN = pope_array_N,
-      PopeN = pope_median_N,
-      PopeArrayB = pope_array_B,
-      PopeB = pope_median_B,
+      modelArrayN = model_array_N,
+      modelN = model_median_N,
+      modelArrayB = model_array_B,
+      modelB = model_median_B,
       Biomass = total_biomass
     )
     
   } else {
     
     output <- list(
-      PopeN = pope_median_N,
-      PopeB = pope_median_B,
+      modelN = model_median_N,
+      modelB = model_median_B,
       Biomass = total_biomass
     )
   }
