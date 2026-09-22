@@ -3,6 +3,7 @@
 # North-Central anchoveta stock (Engraulis ringens)
 # =====================================================================
 library(dplyr)
+library(progress)
 source("code/0_internal_function.R")
 source("code/1_model_functions.R")
 

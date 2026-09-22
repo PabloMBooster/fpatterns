@@ -306,11 +306,6 @@ F_indicators <- function(F_model, modelN, adult_length = 12){
   F_max <- apply(F_model, 2, max, na.rm = TRUE)
   
   #-------------------------
-  # Instantaneous F
-  #-------------------------
-  F_inst <- apply(F_model, 2, sum, na.rm = TRUE)
-  
-  #-------------------------
   # # Observed selectivity
   #-------------------------
   selectivity <- rowMeans(F_model, na.rm = TRUE)
