@@ -21,12 +21,10 @@ load("input/species_data.RData")
 # 2. Setting
 # ---------------------------------------------------------------------
 
-stock <- "nc"
-species_name <- "anchoveta"
-
-data_type <- "boot"
-survey_label <- "crucero"
-
+stock                  <- "nc"
+species_name           <- "anchoveta"
+data_type              <- "boot"
+survey_label           <- "survey"
 environmental_scenario <- "neutral"
 
 survey_unit <- 1e6  # Survey abundance is expressed in millions of individuals
@@ -98,9 +96,9 @@ F_model <- estimate_F_matrix(modelN     = output$modelN,
                              unitSurvey = survey_unit, 
                              unitCatch  = catch_unit)
 
-indicadores <- F_indicators(F_model      = F_model, 
-                            modelN       = output$modelN, 
-                            adult_length = 12)
+indicators <- F_indicators(F_model      = F_model, 
+                           modelN       = output$modelN, 
+                           adult_length = 12)
 
 
 # ---------------------------------------------------------------------
@@ -112,7 +110,7 @@ results_model <- list(CatchData   = CatchData,
                       model       = output, 
                       M_at_length = M_l, 
                       F_at_length = F_model, 
-                      indicators  = indicadores)
+                      indicators  = indicators)
 
 results_model$model$Biomass
 results_model$indicators$F_stock
