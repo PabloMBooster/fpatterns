@@ -1,4 +1,4 @@
-# Length-Structured Population Model for Peruvian Anchoveta
+# Length-Structured Projection Model for Peruvian Anchoveta
 
 This repository contains an R implementation of a **length-structured population projection model** developed for the north-central stock of Peruvian anchoveta (*Engraulis ringens*).
 
